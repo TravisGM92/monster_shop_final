@@ -6,16 +6,21 @@ class Order < ApplicationRecord
   enum status: ['pending', 'packaged', 'shipped', 'cancelled']
 
   def grand_total
+    array_of_applicable_discounts = []
     item_ids = self.items.pluck(:item_id)
-    discount = Discount.joins(:items).where(items: {id: item_ids})
-    if !discount.empty?
-      applicable_items_for_discount = item_ids.select{ |id| discount.each{ |id2| id == id2}}
+    discount1 = Discount.joins(:items).where(items: {id: item_ids})
+    if !discount1.empty?
+      applicable_items_for_discount = item_ids.select{ |id| discount1.each{ |id2| id == id2}}
       applicable_items_for_discount.each do |id1|
         discount = Discount.joins(:items).where(items: {id: id1})[0]["discount_amount"]
-        order = OrderItem.where(item_id: id1)[0]
-        if order["quantity"] <= Discount.joins(:items).where(items: {id: id1})[0]["minimum_amount"]
-          return (order_items.sum('price * quantity') * ((100 - discount.to_f)/100)).round(2)
+        @order = OrderItem.where(item_id: id1)[0]
+        Discount.joins(:items).where(items: {id: id1}).each do |discounts|
+          if @order.quantity >= discounts.minimum_amount
+            array_of_applicable_discounts << discounts
+          end
         end
+        discount_2 = array_of_applicable_discounts.max_by{ |discount| discount.discount_amount}.discount_amount
+        return (order_items.sum('price * quantity') * ((100 - discount_2.to_f)/100)).round(2)
       end
     else
       order_items.sum('price * quantity')
