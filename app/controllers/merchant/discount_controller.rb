@@ -1,7 +1,8 @@
 class Merchant::DiscountController < Merchant::BaseController
-  # def index
-  #   @items = current_user.merchant.items
-  # end
+  def index
+    ids_of_all_items = current_user.merchant.items.map{ |item| item.id}
+    @discounts = Discount.joins(:items).where(items: {id: ids_of_all_items})
+  end
 
   def new
     @item = Item.find(params[:id])
@@ -40,15 +41,15 @@ class Merchant::DiscountController < Merchant::BaseController
   #   redirect_to '/merchant/items'
   # end
 
-  # def destroy
-  #   item = Item.find(params[:id])
-  #   if item.orders.empty?
-  #     item.destroy
-  #   else
-  #     flash[:notice] = "#{item.name} can not be deleted - it has been ordered!"
-  #   end
-  #   redirect_to '/merchant/items'
-  # end
+  def delete
+    discount = Discount.find(params[:id])
+    discount_item = DiscountItem.where(discount_id: discount.id)
+    discount_item[0].destroy
+    if discount.destroy
+      flash[:success] = "The discount has been deleted"
+    end
+    redirect_to '/merchant/discounts'
+  end
 
   private
 
