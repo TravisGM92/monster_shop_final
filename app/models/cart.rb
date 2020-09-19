@@ -1,4 +1,5 @@
 class Cart
+
   attr_reader :contents
 
   def initialize(contents)
@@ -36,8 +37,24 @@ class Cart
     @contents[item_id.to_s]
   end
 
+  def discounted(item_id)
+    discounts = Discount.joins(:items).where(items: {id: item_id})
+    @largest_discounts = discounts.max_by{ |discount| discount.discount_amount}
+    if @largest_discounts != nil && @contents[item_id.to_s] >= @largest_discounts.minimum_amount
+      discounts
+    else
+      []
+    end
+  end
+
   def subtotal_of(item_id)
-    @contents[item_id.to_s] * Item.find(item_id).price
+    discounts = Discount.joins(:items).where(items: {id: item_id})
+    if discounts != []
+      @largest_discounts = discounts.max_by{ |discount| discount.discount_amount}
+      return (@contents[item_id.to_s] * (Item.find(item_id).price)*((100 - @largest_discounts.discount_amount.to_f)/100)).round(2)
+    else
+      @contents[item_id.to_s] * Item.find(item_id).price
+    end
   end
 
   def limit_reached?(item_id)
