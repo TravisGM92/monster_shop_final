@@ -187,7 +187,20 @@ RSpec.describe 'Merchant Discount Creation' do
         click_button("Edit discount")
       end
 
+      expect(page).to have_content("Edit Discount")
+
+      fill_in 'Minimum amount', with: 12
+      fill_in 'Discount amount', with: 25
+      click_on("Update discount")
       expect(current_path).to eq("/merchant/discounts")
+
+      within "#discount-#{@discount_4.id}" do
+        expect(page).to have_content("Item: #{@giant.name}")
+        expect(page).to have_content("\nDiscount: buy at least 12")
+        expect(page).to have_content("and receive 25% off")
+        expect(page).to have_button("Edit discount")
+      end
+
     end
   end
 end
