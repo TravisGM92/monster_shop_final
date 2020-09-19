@@ -8,7 +8,6 @@
     <li><%= item.name %>: <%= item.total_sold %> sold</li>
   <% end %>
 </section>
-
 <% @items.each do |item| %>
   <section id='item-<%= item.id%>'>
     <h2><%= link_to item.name, "/items/#{item.id}" %></h2>
@@ -23,6 +22,18 @@
       <% elsif !item.active? %>
         <%= button_to 'Activate', "/merchant/items/#{item.id}/change_status", method: :put %>
       <% end %>
+        <%@discount_item.each do |d_item| %>
+          <% if d_item.id == item.id %>
+            <p>Discount(s) for <%=item.name%>: </p>
+              <%d_item.discounts.each do |discount1| %>
+                <p>Minimum amount: <%=discount1.minimum_amount%></p>
+                <p>Discount percentage: <%=discount1.discount_amount%>%</p>
+                <p>-------------------------</p>
+              <%end %>
+            <%end %>
+      <%end %>
+      <br>
+      <%= link_to "Create a New Discount for #{item.name}", "/merchant/items/#{item.id}/discount" %>
       <%= link_to 'Update Item', "/merchant/items/#{item.id}/edit" %>
       <%= button_to 'Delete', "/merchant/items/#{item.id}", method: :delete if item.orders.empty? %>
     <% end %>

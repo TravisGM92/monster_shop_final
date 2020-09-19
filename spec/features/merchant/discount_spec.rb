@@ -33,8 +33,23 @@ RSpec.describe 'Merchant Discount Creation' do
             click_link("Create a New Discount for #{@giant.name}")
           end
           expect(current_path).to eq("/merchant/items/#{@giant.id}/discount")
+
+          fill_in 'Minimum amount', with: 5
+          fill_in 'Discount amount', with: 10
+          click_button 'Create New Discount'
+          expect(current_path).to eq("/merchant/items")
+          # save_and_open_page
+          within "#item-#{@giant.id}" do
+            expect(page).to have_content("\nDiscount(s) for #{@giant.name}:\n")
+            expect(page).to have_content("Minimum amount: 5")
+            expect(page).to have_content("Discount percentage: 10%")
+          end
         end
       end
     end
   end
 end
+
+#A merchant can click a link under each item to create a new discount.
+#That discount is tied to the item, which is tied to the merchant.
+#The discount shows up on the index page (if you do @discount_item)

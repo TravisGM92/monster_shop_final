@@ -1,6 +1,8 @@
 class Merchant::ItemsController < Merchant::BaseController
   def index
     @items = current_user.merchant.items
+    discount_ids = Discount.all.pluck(:id)
+    @discount_item = Item.joins(:discounts).where(discounts: {id: discount_ids})
   end
 
   def new
