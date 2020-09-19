@@ -1,0 +1,14 @@
+<%if @discounts.empty? %>
+  <h1>You haven't created any discounts yet!</h1>
+<%else %>
+  <%@discounts.each do |discount| %>
+    <section id="discount-<%= discount.id %>">
+      <%discount.items.each do |item| %>
+        <p>Item: <%=item.name%></p>
+        <%end %>
+        <p>Discount: buy at least <%=discount.minimum_amount%> and receive <%=discount.discount_amount%>% off</p>
+        <%= button_to 'Delete discount', "/merchant/discounts/#{discount.id}/delete", method: :delete %>
+        <p>----------------------------------------------</p>
+    <%end %>
+  </section>
+<%end %>
