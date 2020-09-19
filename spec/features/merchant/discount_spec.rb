@@ -16,12 +16,13 @@ RSpec.describe 'Merchant Discount Creation' do
       @order_item_2 = @order_2.order_items.create!(item: @hippo, price: @hippo.price, quantity: 2, fulfilled: true)
       @order_item_3 = @order_2.order_items.create!(item: @ogre, price: @ogre.price, quantity: 2, fulfilled: false)
       @order_item_4 = @order_3.order_items.create!(item: @giant, price: @giant.price, quantity: 2, fulfilled: false)
-      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(@m_user)
     end
 
     describe "If I visit my items index page, I see a link to 'Create a New Discount for (item name)'" do
       describe "and if I click that link I'm redirected to a page where I can" do
         it "Fill a form to create a new discount with; the minimum amount, and the percentage off" do
+          allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(@m_user)
+
           visit '/merchant'
 
           click_link("My Items")
@@ -38,7 +39,6 @@ RSpec.describe 'Merchant Discount Creation' do
           fill_in 'Discount amount', with: 10
           click_button 'Create New Discount'
           expect(current_path).to eq("/merchant/items")
-          # save_and_open_page
           within "#item-#{@giant.id}" do
             expect(page).to have_content("\nDiscount(s) for #{@giant.name}:\n")
             expect(page).to have_content("Minimum amount: 5")
@@ -46,6 +46,75 @@ RSpec.describe 'Merchant Discount Creation' do
           end
         end
       end
+    end
+      it "A merchant can have multiple bulk discounts" do
+        allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(@m_user)
+
+        visit '/merchant'
+
+        click_link("My Items")
+        within "#item-#{@giant.id}" do
+          expect(page).to have_link("Create a New Discount for #{@giant.name}")
+        end
+
+        within "#item-#{@giant.id}" do
+          click_link("Create a New Discount for #{@giant.name}")
+        end
+        expect(current_path).to eq("/merchant/items/#{@giant.id}/discount")
+
+        fill_in 'Minimum amount', with: 5
+        fill_in 'Discount amount', with: 10
+        click_button 'Create New Discount'
+        expect(current_path).to eq("/merchant/items")
+        # save_and_open_page
+
+        visit '/merchant'
+
+        click_link("My Items")
+        within "#item-#{@ogre.id}" do
+          expect(page).to have_link("Create a New Discount for #{@ogre.name}")
+        end
+
+        within "#item-#{@ogre.id}" do
+          click_link("Create a New Discount for #{@ogre.name}")
+        end
+        expect(current_path).to eq("/merchant/items/#{@ogre.id}/discount")
+
+        fill_in 'Minimum amount', with: 5
+        fill_in 'Discount amount', with: 10
+        click_button 'Create New Discount'
+        expect(current_path).to eq("/merchant/items")
+
+        within "#item-#{@giant.id}" do
+          expect(page).to have_content("\nDiscount(s) for #{@giant.name}:\n")
+          expect(page).to have_content("Minimum amount: 5")
+          expect(page).to have_content("Discount percentage: 10%")
+        end
+        within "#item-#{@ogre.id}" do
+          expect(page).to have_content("\nDiscount(s) for #{@ogre.name}:\n")
+          expect(page).to have_content("Minimum amount: 5")
+          expect(page).to have_content("Discount percentage: 10%")
+        end
+    end
+    it "As a user, I can see the discount reflected on my check-out page" do
+      discount = @ogre.discounts.create!(minimum_amount: 5, discount_amount: 10)
+      @user = User.create!(name: 'Megan', address: '123 Main St', city: 'Denver', state: 'CO', zip: 80218, email: 'megan_1@example.com', password: 'securepassword')
+      @order_1 = @user.orders.create!(status: "packaged")
+      @order_2 = @user.orders.create!(status: "pending")
+      @order_item_1 = @order_1.order_items.create!(item: @ogre, price: @ogre.price, quantity: 5, fulfilled: true)
+      @order_item_2 = @order_2.order_items.create!(item: @giant, price: @hippo.price, quantity: 2, fulfilled: true)
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(@user)
+
+      visit "/profile/orders/#{@order_1.id}"
+
+      expect(page).to have_content(@order_1.id)
+      expect(page).to have_content("Created On: #{@order_1.created_at}")
+      expect(page).to have_content("Updated On: #{@order_1.updated_at}")
+      expect(page).to have_content("Status: #{@order_1.status}")
+      expect(page).to have_content("#{@order_1.count_of_items} items")
+      expect(page).to have_content("Total: $#{@order_1.grand_total}")
+
+      expect(page).to have_content("Your #{@ogre.name} met the minimum discount requirement. Discount of #{discount.discount_amount}% applied!")
     end
   end
 end

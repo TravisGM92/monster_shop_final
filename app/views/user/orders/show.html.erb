@@ -14,5 +14,8 @@
     <p>Quantity: <%= order_item.quantity %></p>
     <p>Price: <%= number_to_currency(order_item.price) %></p>
     <p>Subtotal: <%= number_to_currency(order_item.subtotal) %></p>
+    <%if Discount.joins(:items).pluck(:item_id).include?(order_item.item.id) %>
+      <p>Your <%=order_item.item.name%> met the minimum discount requirement. Discount of <%= Discount.joins(:items).where(items: {id: order_item.item_id})[0].discount_amount%>% applied!"</p>
+    <%end %>
   </section>
 <% end %>
