@@ -14,4 +14,8 @@ class OrderItem < ApplicationRecord
   def fulfillable?
     item.inventory >= quantity
   end
+
+  def max_discount_percent
+    Discount.maximum('discount_amount')
+  end
 end
