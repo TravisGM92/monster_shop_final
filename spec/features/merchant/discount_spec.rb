@@ -229,5 +229,51 @@ RSpec.describe 'Merchant Discount Creation' do
 
       expect(page).to have_content("Your #{@ogre.name} met the minimum discount requirement. Discount of 15% applied!")
     end
+
+    it "As a user, I can see the discount reflected on my cart page" do
+      discount = @ogre.discounts.create!(minimum_amount: 5, discount_amount: 10)
+      @user = User.create!(name: 'Megan', address: '123 Main St', city: 'Denver', state: 'CO', zip: 80218, email: 'megan_1@example.com', password: 'securepassword')
+      @order_1 = @user.orders.create!(status: "packaged")
+      @order_2 = @user.orders.create!(status: "pending")
+      @order_item_1 = @order_1.order_items.create!(item: @ogre, price: @ogre.price, quantity: 5, fulfilled: true)
+      @order_item_2 = @order_2.order_items.create!(item: @giant, price: @hippo.price, quantity: 2, fulfilled: true)
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(@user)
+
+      5.times{
+        visit item_path(@ogre)
+
+        click_button 'Add to Cart'
+      }
+
+      visit "/cart"
+
+      expect(page).to have_content("Discount applied: #{discount.discount_amount}%")
+
+    end
+
+    it "As a user, I can see the discount reflected on my cart page AFTER I hit the minimum" do
+      discount = @ogre.discounts.create!(minimum_amount: 5, discount_amount: 10)
+      @user = User.create!(name: 'Megan', address: '123 Main St', city: 'Denver', state: 'CO', zip: 80218, email: 'megan_1@example.com', password: 'securepassword')
+      @order_1 = @user.orders.create!(status: "packaged")
+      @order_2 = @user.orders.create!(status: "pending")
+      @order_item_1 = @order_1.order_items.create!(item: @ogre, price: @ogre.price, quantity: 5, fulfilled: true)
+      @order_item_2 = @order_2.order_items.create!(item: @giant, price: @hippo.price, quantity: 2, fulfilled: true)
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(@user)
+
+      4.times{
+        visit item_path(@ogre)
+
+        click_button 'Add to Cart'
+      }
+      visit "/cart"
+      expect(page).to_not have_content("Discount applied: #{discount.discount_amount}%")
+
+      visit item_path(@ogre)
+
+      click_button 'Add to Cart'
+      visit "/cart"
+
+      expect(page).to have_content("Discount applied: #{discount.discount_amount}%")
+    end
   end
 end
