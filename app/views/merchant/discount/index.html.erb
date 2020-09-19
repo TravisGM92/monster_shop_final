@@ -8,6 +8,7 @@
         <%end %>
         <p>Discount: buy at least <%=discount.minimum_amount%> and receive <%=discount.discount_amount%>% off</p>
         <%= button_to 'Delete discount', "/merchant/discounts/#{discount.id}/delete", method: :delete %>
+        <%= button_to 'Edit discount', "/merchant/discounts/#{discount.id}/edit" %>
         <p>----------------------------------------------</p>
     <%end %>
   </section>
