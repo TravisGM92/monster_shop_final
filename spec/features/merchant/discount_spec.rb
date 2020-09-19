@@ -12,15 +12,15 @@ RSpec.describe 'Merchant Discount Creation' do
       @order_1 = @m_user.orders.create!(status: "pending")
       @order_2 = @m_user.orders.create!(status: "pending")
       @order_3 = @m_user.orders.create!(status: "pending")
-      @order_item_1 = @order_1.order_items.create!(item: @hippo, price: @hippo.price, quantity: 2, fulfilled: false)
-      @order_item_2 = @order_2.order_items.create!(item: @hippo, price: @hippo.price, quantity: 2, fulfilled: true)
-      @order_item_3 = @order_2.order_items.create!(item: @ogre, price: @ogre.price, quantity: 2, fulfilled: false)
-      @order_item_4 = @order_3.order_items.create!(item: @giant, price: @giant.price, quantity: 2, fulfilled: false)
     end
 
     describe "If I visit my items index page, I see a link to 'Create a New Discount for (item name)'" do
       describe "and if I click that link I'm redirected to a page where I can" do
         it "Fill a form to create a new discount with; the minimum amount, and the percentage off" do
+          @order_item_1 = @order_1.order_items.create!(item: @hippo, price: @hippo.price, quantity: 2, fulfilled: false)
+          @order_item_2 = @order_2.order_items.create!(item: @hippo, price: @hippo.price, quantity: 2, fulfilled: true)
+          @order_item_3 = @order_2.order_items.create!(item: @ogre, price: @ogre.price, quantity: 2, fulfilled: false)
+          @order_item_4 = @order_3.order_items.create!(item: @giant, price: @giant.price, quantity: 2, fulfilled: false)
           allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(@m_user)
 
           visit '/merchant'
@@ -48,6 +48,10 @@ RSpec.describe 'Merchant Discount Creation' do
       end
     end
       it "A merchant can have multiple bulk discounts" do
+        @order_item_1 = @order_1.order_items.create!(item: @hippo, price: @hippo.price, quantity: 2, fulfilled: false)
+        @order_item_2 = @order_2.order_items.create!(item: @hippo, price: @hippo.price, quantity: 2, fulfilled: true)
+        @order_item_3 = @order_2.order_items.create!(item: @ogre, price: @ogre.price, quantity: 2, fulfilled: false)
+        @order_item_4 = @order_3.order_items.create!(item: @giant, price: @giant.price, quantity: 2, fulfilled: false)
         allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(@m_user)
 
         visit '/merchant'
