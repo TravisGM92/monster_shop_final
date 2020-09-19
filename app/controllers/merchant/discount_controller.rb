@@ -16,19 +16,16 @@ class Merchant::DiscountController < Merchant::BaseController
     end
   end
 
-  # def edit
-  #   @item = Item.find(params[:id])
-  # end
+  def edit
+    @discount = Discount.find(params[:id])
+  end
 
-  # def update
-  #   @item = Item.find(params[:id])
-  #   if @item.update(item_params)
-  #     redirect_to "/merchant/items"
-  #   else
-  #     generate_flash(@item)
-  #     render :edit
-  #   end
-  # end
+  def update
+    @discount = Discount.find(params[:id])
+    if @discount.update(discount_params)
+      redirect_to "/merchant/discounts"
+    end
+  end
 
   # def change_status
   #   item = Item.find(params[:id])
