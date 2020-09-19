@@ -42,6 +42,8 @@ Rails.application.routes.draw do
     get '/orders/:id/fulfill/:order_item_id', to: 'orders#fulfill'
     get '/items/:id/discount', to: 'discount#new'
     post '/:id/discount', to: 'discount#create'
+    get '/discounts', to: 'discount#index'
+    delete '/discounts/:id/delete', to: 'discount#delete'
   end
 
   namespace :admin do
