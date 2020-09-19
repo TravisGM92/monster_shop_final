@@ -6,7 +6,20 @@ class Order < ApplicationRecord
   enum status: ['pending', 'packaged', 'shipped', 'cancelled']
 
   def grand_total
-    order_items.sum('price * quantity')
+    item_ids = self.items.pluck(:item_id)
+    discount = Discount.joins(:items).where(items: {id: item_ids})
+    if !discount.empty?
+      applicable_items_for_discount = item_ids.select{ |id| discount.each{ |id2| id == id2}}
+      applicable_items_for_discount.each do |id1|
+        discount = Discount.joins(:items).where(items: {id: id1})[0]["discount_amount"]
+        order = OrderItem.where(item_id: id1)[0]
+        if order["quantity"] <= Discount.joins(:items).where(items: {id: id1})[0]["minimum_amount"]
+          return (order_items.sum('price * quantity') * ((100 - discount.to_f)/100)).round(2)
+        end
+      end
+    else
+      order_items.sum('price * quantity')
+    end
   end
 
   def count_of_items
