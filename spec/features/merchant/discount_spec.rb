@@ -116,6 +116,40 @@ RSpec.describe 'Merchant Discount Creation' do
 
       expect(page).to have_content("Your #{@ogre.name} met the minimum discount requirement. Discount of #{discount.discount_amount}% applied!")
     end
+    it "A merchant can view all discounts and delete a discount" do
+      @discount_1 = @ogre.discounts.create!(minimum_amount: 5, discount_amount: 10)
+      @discount_2 = @ogre.discounts.create!(minimum_amount: 10, discount_amount: 15)
+      @discount_3 = @hippo.discounts.create!(minimum_amount: 3, discount_amount: 10)
+
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(@m_user)
+
+      visit("/merchant/discounts")
+
+      within "#discount-#{@discount_1.id}" do
+        expect(page).to have_content("Item: #{@ogre.name}")
+        expect(page).to have_content("Minimum amount: #{@discount_1.minimum_amount}")
+        expect(page).to have_content("Discount: #{@discount_1.discount_amount}%")
+        expect(page).to have_link("Delete discount")
+      end
+
+      within "#discount-#{@discount_2.id}" do
+        expect(page).to have_content("Item: #{@ogre.name}")
+        expect(page).to have_content("Minimum amount: #{@discount_2.minimum_amount}")
+        expect(page).to have_content("Discount: #{@discount_2.discount_amount}%")
+        expect(page).to have_link("Delete discount")
+      end
+
+      within "#discount-#{@discount_3.id}" do
+        expect(page).to have_content("Item: #{@hippo.name}")
+        expect(page).to have_content("Minimum amount: #{@discount_3.minimum_amount}")
+        expect(page).to have_content("Discount: #{@discount_3.discount_amount}%")
+        expect(page).to have_link("Delete discount")
+      end
+    end
+
+    it "A merchant can edit a discount" do
+
+    end
   end
 end
 
