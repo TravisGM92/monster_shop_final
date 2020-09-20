@@ -315,5 +315,84 @@ RSpec.describe 'Merchant Discount Creation' do
       expect(page).to have_content("This discount already exists")
 
     end
+
+    it "A discount will not trigger even if 2 items quantities together hit a minimum (together, but not separately)" do
+      discount = @ogre.discounts.create!(minimum_amount: 5, discount_amount: 10)
+      @user = User.create!(name: 'Megan', address: '123 Main St', city: 'Denver', state: 'CO', zip: 80218, email: 'megan_1@example.com', password: 'securepassword')
+      @order_1 = @user.orders.create!(status: "packaged")
+      @order_2 = @user.orders.create!(status: "pending")
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(@user)
+
+      4.times{
+        visit item_path(@ogre)
+
+        click_button 'Add to Cart'
+      }
+      visit "/cart"
+      expect(page).to_not have_content("Discount applied: #{discount.discount_amount}%")
+
+      visit item_path(@giant)
+
+      click_button 'Add to Cart'
+      visit "/cart"
+
+      expect(page).to_not have_content("Discount applied:")
+    end
+
+    it "After a discount is deleted, it no longer effects anything" do
+      @discount_1 = @ogre.discounts.create!(minimum_amount: 5, discount_amount: 10)
+      @discount_2 = @ogre.discounts.create!(minimum_amount: 10, discount_amount: 15)
+      @discount_3 = @hippo.discounts.create!(minimum_amount: 3, discount_amount: 10)
+      @discount_4 = @giant.discounts.create!(minimum_amount: 5, discount_amount: 10)
+      @user = User.create!(name: 'Megan', address: '123 Main St', city: 'Denver', state: 'CO', zip: 80218, email: 'megan_2@example.com', password: 'securepassword')
+
+
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(@m_user)
+
+      visit("/merchant/discounts")
+      expect(page).to_not have_content("You haven't created any discounts yet!")
+
+      within "#discount-#{@discount_1.id}" do
+        expect(page).to have_content("Item: #{@ogre.name}")
+        expect(page).to have_content("\nDiscount: buy at least #{@discount_1.minimum_amount}")
+        expect(page).to have_content("and receive #{@discount_1.discount_amount}% off")
+        expect(page).to have_button("Delete discount")
+      end
+
+      within "#discount-#{@discount_2.id}" do
+        expect(page).to have_content("Item: #{@ogre.name}")
+        expect(page).to have_content("\nDiscount: buy at least #{@discount_2.minimum_amount}")
+        expect(page).to have_content("and receive #{@discount_2.discount_amount}% off")
+        expect(page).to have_button("Delete discount")
+      end
+
+      within "#discount-#{@discount_4.id}" do
+        expect(page).to have_content("Item: #{@giant.name}")
+        expect(page).to have_content("\nDiscount: buy at least #{@discount_4.minimum_amount}")
+        expect(page).to have_content("and receive #{@discount_4.discount_amount}%")
+        expect(page).to have_button("Delete discount")
+        click_button("Delete discount")
+      end
+
+      expect(current_path).to eq("/merchant/discounts")
+      expect(page).to_not have_content("Item: #{@giant.name}")
+
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(@user)
+
+      @user = User.create!(name: 'Megan', address: '123 Main St', city: 'Denver', state: 'CO', zip: 80218, email: 'megan_1@example.com', password: 'securepassword')
+      @order_1 = @user.orders.create!(status: "packaged")
+      @order_2 = @user.orders.create!(status: "pending")
+
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(@user)
+
+      5.times{
+        visit item_path(@giant)
+
+        click_button 'Add to Cart'
+      }
+      visit "/cart"
+
+      expect(page).to_not have_content("Discount applied:")
+    end
   end
 end
