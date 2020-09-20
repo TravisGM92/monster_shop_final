@@ -1,6 +1,6 @@
 class Merchant::DiscountController < Merchant::BaseController
   def index
-    ids_of_all_items = current_user.merchant.items.map{ |item| item.id}
+    ids_of_all_items = current_user.merchant.items.pluck(:id)
     @discounts = Discount.joins(:items).where(items: {id: ids_of_all_items})
   end
 
@@ -26,17 +26,6 @@ class Merchant::DiscountController < Merchant::BaseController
       redirect_to "/merchant/discounts"
     end
   end
-
-  # def change_status
-  #   item = Item.find(params[:id])
-  #   item.update(active: !item.active)
-  #   if item.active?
-  #     flash[:notice] = "#{item.name} is now available for sale"
-  #   else
-  #     flash[:notice] = "#{item.name} is no longer for sale"
-  #   end
-  #   redirect_to '/merchant/items'
-  # end
 
   def delete
     discount = Discount.find(params[:id])
