@@ -100,7 +100,7 @@ RSpec.describe 'Merchant Discount Creation' do
           expect(page).to have_content("Discount percentage: 10%")
         end
     end
-    it "As a user, I can see the discount reflected on my check-out page" do
+    it "As a user, I can see the discount reflected on my order page" do
       discount = @ogre.discounts.create!(minimum_amount: 5, discount_amount: 10)
       @user = User.create!(name: 'Megan', address: '123 Main St', city: 'Denver', state: 'CO', zip: 80218, email: 'megan_1@example.com', password: 'securepassword')
       @order_1 = @user.orders.create!(status: "packaged")

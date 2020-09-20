@@ -50,8 +50,8 @@ class Cart
   def subtotal_of(item_id)
     discounts = Discount.joins(:items).where(items: {id: item_id})
     if discounts != []
-      @largest_discounts = discounts.max_by{ |discount| discount.discount_amount}
-      return (@contents[item_id.to_s] * (Item.find(item_id).price)*((100 - @largest_discounts.discount_amount.to_f)/100)).round(2)
+      @largest_discount = discounts.order(:discount_amount).first
+      return (@contents[item_id.to_s] * (Item.find(item_id).price)*((100 - @largest_discount.discount_amount.to_f)/100)).round(2)
     else
       @contents[item_id.to_s] * Item.find(item_id).price
     end

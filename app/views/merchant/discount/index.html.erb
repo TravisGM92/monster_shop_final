@@ -1,5 +1,6 @@
 <%if @discounts.empty? %>
   <h1>You haven't created any discounts yet!</h1>
+  <h2><%= link_to "Create a new discount", "/items" %></h2>
 <%else %>
   <%@discounts.each do |discount| %>
     <section id="discount-<%= discount.id %>">
