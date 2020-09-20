@@ -34,4 +34,14 @@ class DiscountCalculations
     end
   end
 
+  def check_if_discount_unique(id, minimum, discount)
+    if Item.find(id.to_i).discounts != []
+      if Item.find(id.to_i).discounts[0].minimum_amount == minimum.to_i && Item.find(id.to_i).discounts[0].discount_amount == discount.to_i
+        return false
+      end
+    else
+      true
+    end
+  end
+
 end
