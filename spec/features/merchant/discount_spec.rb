@@ -275,5 +275,45 @@ RSpec.describe 'Merchant Discount Creation' do
 
       expect(page).to have_content("Discount applied: #{discount.discount_amount}%")
     end
+
+    it "A merchant will be notified if they try to create a discount that already exists" do
+      @discount_1 = @ogre.discounts.create!(minimum_amount: 5, discount_amount: 10)
+      @order_item_1 = @order_1.order_items.create!(item: @hippo, price: @hippo.price, quantity: 2, fulfilled: false)
+      @order_item_2 = @order_2.order_items.create!(item: @hippo, price: @hippo.price, quantity: 2, fulfilled: true)
+      @order_item_3 = @order_2.order_items.create!(item: @ogre, price: @ogre.price, quantity: 2, fulfilled: false)
+      @order_item_4 = @order_3.order_items.create!(item: @giant, price: @giant.price, quantity: 2, fulfilled: false)
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(@m_user)
+
+      visit("/merchant/discounts")
+      expect(page).to_not have_content("You haven't created any discounts yet!")
+
+      within "#discount-#{@discount_1.id}" do
+        expect(page).to have_content("Item: #{@ogre.name}")
+        expect(page).to have_content("\nDiscount: buy at least #{@discount_1.minimum_amount}")
+        expect(page).to have_content("and receive #{@discount_1.discount_amount}% off")
+        expect(page).to have_button("Delete discount")
+        expect(page).to have_button("Edit discount")
+      end
+
+      visit '/merchant'
+
+      click_link("My Items")
+      within "#item-#{@ogre.id}" do
+        expect(page).to have_link("Create a New Discount for #{@ogre.name}")
+      end
+
+      within "#item-#{@ogre.id}" do
+        click_link("Create a New Discount for #{@ogre.name}")
+      end
+      expect(current_path).to eq("/merchant/items/#{@ogre.id}/discount")
+
+      fill_in 'Minimum amount', with: 5
+      fill_in 'Discount amount', with: 10
+      click_button 'Create New Discount'
+
+      expect(current_path).to eq("/merchant/items/#{@ogre.id}/discount")
+      expect(page).to have_content("This discount already exists")
+
+    end
   end
 end

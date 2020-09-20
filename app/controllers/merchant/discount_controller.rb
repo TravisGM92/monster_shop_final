@@ -9,10 +9,16 @@ class Merchant::DiscountController < Merchant::BaseController
   end
 
   def create
-    item = Item.find(params[:id])
-    discount = item.discounts.create!(discount_params)
-    if discount.save
-      redirect_to "/merchant/items"
+    if DiscountCalculations.new.check_if_discount_unique(params[:id], params[:minimum_amount], params[:discount_amount])
+      @item = Item.find(params[:id])
+      discount = @item.discounts.create!(discount_params)
+      if discount.save
+        redirect_to "/merchant/items"
+      end
+    else
+      @item = Item.find(params[:id])
+      redirect_to("/merchant/items/#{@item.id}/discount")
+      flash[:notice] = "This discount already exists"
     end
   end
 
