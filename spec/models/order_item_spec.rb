@@ -40,5 +40,17 @@ RSpec.describe OrderItem do
       expect(@order_item_1.fulfilled).to eq(true)
       expect(@ogre.inventory).to eq(3)
     end
+
+    it '.max_discount_percent' do
+
+      discount = @ogre.discounts.create!(minimum_amount: 5, discount_amount: 10)
+      @user = User.create!(name: 'Megan', address: '123 Main St', city: 'Denver', state: 'CO', zip: 80218, email: 'megan_1@example.com', password: 'securepassword')
+      @order_1 = @user.orders.create!(status: "packaged")
+      @order_2 = @user.orders.create!(status: "pending")
+      @order_item_1 = @order_1.order_items.create!(item: @ogre, price: @ogre.price, quantity: 5, fulfilled: true)
+      @order_item_2 = @order_2.order_items.create!(item: @giant, price: @hippo.price, quantity: 2, fulfilled: true)
+
+      expect(@order_item_1.max_discount_percent).to eq(10)
+    end
   end
 end

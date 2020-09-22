@@ -63,5 +63,17 @@ RSpec.describe Cart do
 
       expect(@cart.count_of(@giant.id)).to eq(1)
     end
+
+    it '.discounted()' do
+
+      expect(@cart.discounted(@ogre.id)).to eq([])
+      @discount_1 = @giant.discounts.create!(minimum_amount: 2, discount_amount: 10)
+      expect(@cart.discounted(@giant.id)).to eq([@discount_1])
+    end
+
+    it '.subtotal_of()' do
+      @discount_1 = @giant.discounts.create!(minimum_amount: 2, discount_amount: 10)
+      expect(@cart.subtotal_of(@giant.id)).to eq(90.0)
+    end
   end
 end
